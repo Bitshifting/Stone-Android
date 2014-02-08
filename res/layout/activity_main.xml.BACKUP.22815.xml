@@ -3,6 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
+<<<<<<< HEAD
     android:layout_height="match_parent"
     android:gravity="fill"
     tools:context=".MainActivity" >
@@ -13,6 +14,17 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         class="com.google.android.gms.maps.MapFragment" />
+
+</RelativeLayout>
+=======
+    android:layout_height="match_parent">
+
+    <!-- As the main content view, the view below consumes the entire
+         space available using match_parent in both dimensions. -->
+    <FrameLayout
+        android:id="@+id/content_frame"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
     <!-- android:layout_gravity="start" tells DrawerLayout to treat
          this as a sliding drawer on the left side for left-to-right
@@ -30,3 +42,4 @@
         android:dividerHeight="0dp"
         android:background="#111"/>
 </android.support.v4.widget.DrawerLayout>
+>>>>>>> bbe8b2705af1f169979eac4574785bd5e699b58f

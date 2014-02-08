@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" 
+    android:background="#888888">
+    
+    <TextView
+        android:id="@+id/messagetitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:text="Leave a Message!"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp" />
+    
+    <EditText 
+        android:id="@+id/message_space"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/messagetitle"
+        android:layout_margin="10dp"
+        android:hint="Type message here."
+        android:lines="8"
+        android:minLines="8"
+        android:gravity="top|left"
+        android:textColor="#000000"
+        android:singleLine="false"
+        android:background="#FFFFFF"/>
+    
+    <RadioGroup
+        android:id="@+id/privacy_group"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:orientation="vertical"
+        android:layout_below="@id/message_space" >
+        
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:text="Leave a public message"
+            android:textSize="18sp"
+            android:textColor="#FFFFFF" />
+        
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:text="Leave a private message to:"
+            android:textSize="18sp"
+            android:textColor="#FFFFFF" />
+        
+        </RadioGroup>
+        
+    <ListView
+        android:id="@+id/friend_list"
+        android:layout_height="match_parent"
+        android:layout_width="match_parent"
+        android:layout_below="@id/privacy_group"
+        android:layout_above="@+id/post_button" />
+    <Button
+        android:id="@id/post_button"
+        android:layout_height="50dp"
+        android:layout_width="70dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:text="Post"
+        android:layout_marginBottom="5dp" />
+
+</RelativeLayout>

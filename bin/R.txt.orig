@@ -58,7 +58,11 @@ int drawable ic_plusone_medium_off_client 0x7f020019
 int drawable ic_plusone_small_off_client 0x7f02001a
 int drawable ic_plusone_standard_off_client 0x7f02001b
 int drawable ic_plusone_tall_off_client 0x7f02001c
+<<<<<<< HEAD
 int id action_settings 0x7f050006
+int id hybrid 0x7f050004
+int id map 0x7f050005
+=======
 int id action_settings 0x7f05000f
 int id content_frame 0x7f050006
 int id drawer_layout 0x7f050005
@@ -66,10 +70,10 @@ int id friend_check 0x7f05000d
 int id friend_list 0x7f05000b
 int id friend_text 0x7f05000e
 int id hybrid 0x7f050004
-int id map 0x7f050005
 int id left_drawer 0x7f050007
 int id message_space 0x7f050009
 int id messagetitle 0x7f050008
+>>>>>>> bbe8b2705af1f169979eac4574785bd5e699b58f
 int id none 0x7f050000
 int id normal 0x7f050001
 int id post_button 0x7f05000c
