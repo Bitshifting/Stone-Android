@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:orientation="vertical" >
+    <EditText
+        android:id="@+id/message_dialog_message"
+        android:layout_marginTop="16dp"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:hint="Add text here..." />
+    <LinearLayout
+        android:layout_marginTop="16dp"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:orientation="horizontal" >
+        <Button
+            android:id="@+id/send_message"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_weight=".5"
+            android:text="Send" />
+        <Button
+            android:id="@+id/cancel_message"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_weight=".5"
+            android:text="Cancel" />
+    </LinearLayout>
+
+</LinearLayout>
