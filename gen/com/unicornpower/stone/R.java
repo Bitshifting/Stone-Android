@@ -221,10 +221,20 @@ containing a value of this type.
         public static final int ic_plusone_tall_off_client=0x7f02001c;
     }
     public static final class id {
-        public static final int action_settings=0x7f050005;
+        public static final int action_settings=0x7f05000f;
+        public static final int content_frame=0x7f050006;
+        public static final int drawer_layout=0x7f050005;
+        public static final int friend_check=0x7f05000d;
+        public static final int friend_list=0x7f05000b;
+        public static final int friend_text=0x7f05000e;
         public static final int hybrid=0x7f050004;
+        public static final int left_drawer=0x7f050007;
+        public static final int message_space=0x7f050009;
+        public static final int messagetitle=0x7f050008;
         public static final int none=0x7f050000;
         public static final int normal=0x7f050001;
+        public static final int post_button=0x7f05000c;
+        public static final int privacy_group=0x7f05000a;
         public static final int satellite=0x7f050002;
         public static final int terrain=0x7f050003;
     }
@@ -233,6 +243,9 @@ containing a value of this type.
     }
     public static final class layout {
         public static final int activity_main=0x7f030000;
+        public static final int drawer_list_item=0x7f030001;
+        public static final int fragment_message=0x7f030002;
+        public static final int friend_item=0x7f030003;
     }
     public static final class menu {
         public static final int main=0x7f0a0000;
