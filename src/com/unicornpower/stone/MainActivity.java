@@ -1,19 +1,17 @@
 
 package com.unicornpower.stone;
 
-import java.util.concurrent.ExecutionException;
-
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.res.Configuration;
 import android.location.Location;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient.ConnectionCallbacks;
@@ -44,12 +42,15 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 
         map = ((MapFragment) fragment).getMap();
         map.setMyLocationEnabled(true);
+        
+        locationClient = new LocationClient(this, this, this);
+        locationClient.connect();
+        
         final Dialog myDialog = new Dialog(this);
         myDialog.setContentView(R.layout.dialog_message);
-        Button sendButton = (Button) findViewById(R.id.message_button);
-        sendButton.getBackground().setAlpha(255);
         myDialog.setTitle("Send a Message");
-        sendButton.setOnClickListener(new OnClickListener(){
+        
+        ((Button) findViewById(R.id.message_button)).setOnClickListener(new OnClickListener(){
 
 			@Override
 			public void onClick(View v) {
@@ -58,7 +59,6 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 			}
         	
         });
-
 
     }
 
@@ -110,12 +110,12 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 		locationClient.requestLocationUpdates(locationRequest, this);
         currentLocation = locationClient.getLastLocation();
         populateMap();
-		
+		Toast.makeText(this, "Connected to location services", Toast.LENGTH_SHORT).show();
 	}
 
 	@Override
 	public void onConnectionFailed(ConnectionResult result) {
-	
+		Toast.makeText(this, "Connection Failed", Toast.LENGTH_SHORT).show();
 	}
 	
 	
@@ -132,6 +132,7 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 	public void onLocationChanged(Location location) {
 		LatLng loc = new LatLng(location.getLatitude(), location.getLongitude());
 //		Toast.makeText(this, "Location has changed", Toast.LENGTH_SHORT).show();
+		// if the app just started up then pan to the current location, otherwise let user pan elsewhere
 		if (!isInit) {
 			map.moveCamera(CameraUpdateFactory.newLatLngZoom(loc, 10));
 			isInit = true;
