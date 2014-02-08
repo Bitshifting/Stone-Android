@@ -1,11 +1,14 @@
 
 package com.unicornpower.stone;
 
+import java.util.concurrent.ExecutionException;
+
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.res.Configuration;
 import android.location.Location;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
@@ -43,9 +46,10 @@ public class MainActivity extends Activity implements LocationListener, Connecti
         map.setMyLocationEnabled(true);
         final Dialog myDialog = new Dialog(this);
         myDialog.setContentView(R.layout.dialog_message);
+        Button sendButton = (Button) findViewById(R.id.message_button);
+        sendButton.getBackground().setAlpha(255);
         myDialog.setTitle("Send a Message");
-        
-        ((Button) findViewById(R.id.message_button)).setOnClickListener(new OnClickListener(){
+        sendButton.setOnClickListener(new OnClickListener(){
 
 			@Override
 			public void onClick(View v) {
@@ -54,6 +58,7 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 			}
         	
         });
+
 
     }
 
@@ -103,6 +108,8 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 		locationRequest.setFastestInterval(1000);
 		locationRequest.setInterval(1000).setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 		locationClient.requestLocationUpdates(locationRequest, this);
+        currentLocation = locationClient.getLastLocation();
+        populateMap();
 		
 	}
 
@@ -132,4 +139,14 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 		
 	}
 	
+	/*
+	 * This method makes the server calls to get the data from the server.
+	 */
+	public void populateMap(){
+		ServerAPITask getMapTask = new ServerAPITask();
+		getMapTask.setAPIRequest("http://riptide.alexkersten.com:3333/stoneapi/messsage/get/" + currentLocation.getLatitude() + "/" + currentLocation.getLongitude() + "/5280");
+		getMapTask.execute("Hello");
+
+
+	}
 }
