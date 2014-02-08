@@ -2,10 +2,10 @@
 package com.unicornpower.stone;
 
 import android.content.res.Configuration;
+import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -14,7 +14,19 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-public class MainActivity extends FragmentActivity {
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesClient.ConnectionCallbacks;
+import com.google.android.gms.common.GooglePlayServicesClient.OnConnectionFailedListener;
+import com.google.android.gms.location.LocationClient;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+
+public class MainActivity extends FragmentActivity implements LocationListener, ConnectionCallbacks, OnConnectionFailedListener {
 
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
@@ -22,6 +34,11 @@ public class MainActivity extends FragmentActivity {
     private CharSequence mDrawerTitle;
     private CharSequence mTitle;
     private String[] mOptionTitles = {"Map", "Leave a Message", "Account", "Friends", "Settings"};
+	private GoogleMap map;
+	private LocationClient locationClient;
+	private Location currentLocation;
+	private LocationRequest locationRequest;
+	private boolean isInit = false;
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,10 +92,17 @@ public class MainActivity extends FragmentActivity {
     private void selectItem(int position) {
         // update the main content by replacing fragments
         Bundle args = new Bundle();
-        MessageFragment fragment = new MessageFragment();
+        SupportMapFragment fragment = new SupportMapFragment();
+        MessageFragment fragment2 = new MessageFragment();
+        if (position == 0){
+        	map = ((SupportMapFragment) fragment).getMap();
+        	this.getSupportFragmentManager().beginTransaction().replace(R.id.content_frame, fragment).commit();
+        }else{
+            android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
+            fragmentManager.beginTransaction().replace(R.id.content_frame, fragment2).commit();
+        }
 
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
+
 
         // update selected item and title, then close the drawer
         mDrawerList.setItemChecked(position, true);
@@ -108,5 +132,40 @@ public class MainActivity extends FragmentActivity {
         // Pass any configuration change to the drawer toggls
         mDrawerToggle.onConfigurationChanged(newConfig);
     }
+    
+	@Override
+	public void onConnected(Bundle connectionHint) {
+		locationRequest = LocationRequest.create(); //Create location request
+		locationRequest.setFastestInterval(1000);
+		locationRequest.setInterval(1000).setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+		locationClient.requestLocationUpdates(locationRequest, this);
+		
+	}
 
+	@Override
+	public void onConnectionFailed(ConnectionResult result) {
+	
+	}
+	
+	
+	@Override
+	public void onDestroy() {
+	    locationClient.disconnect();
+	}
+	
+	@Override
+	public void onDisconnected() {
+	}
+
+	@Override
+	public void onLocationChanged(Location location) {
+		LatLng loc = new LatLng(location.getLatitude(), location.getLongitude());
+//		Toast.makeText(this, "Location has changed", Toast.LENGTH_SHORT).show();
+		if (!isInit) {
+			map.moveCamera(CameraUpdateFactory.newLatLngZoom(loc, 10));
+			isInit = true;
+		}	
+		
+	}
+	
 }
