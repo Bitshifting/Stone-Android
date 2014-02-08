@@ -11,6 +11,7 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient.ConnectionCallbacks;
@@ -41,6 +42,10 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 
         map = ((MapFragment) fragment).getMap();
         map.setMyLocationEnabled(true);
+        
+        locationClient = new LocationClient(this, this, this);
+        locationClient.connect();
+        
         final Dialog myDialog = new Dialog(this);
         myDialog.setContentView(R.layout.dialog_message);
         myDialog.setTitle("Send a Message");
@@ -103,12 +108,12 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 		locationRequest.setFastestInterval(1000);
 		locationRequest.setInterval(1000).setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 		locationClient.requestLocationUpdates(locationRequest, this);
-		
+		Toast.makeText(this, "Connected to location services", Toast.LENGTH_SHORT).show();
 	}
 
 	@Override
 	public void onConnectionFailed(ConnectionResult result) {
-	
+		Toast.makeText(this, "Connection Failed", Toast.LENGTH_SHORT).show();
 	}
 	
 	
@@ -125,6 +130,7 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 	public void onLocationChanged(Location location) {
 		LatLng loc = new LatLng(location.getLatitude(), location.getLongitude());
 //		Toast.makeText(this, "Location has changed", Toast.LENGTH_SHORT).show();
+		// if the app just started up then pan to the current location, otherwise let user pan elsewhere
 		if (!isInit) {
 			map.moveCamera(CameraUpdateFactory.newLatLngZoom(loc, 10));
 			isInit = true;
