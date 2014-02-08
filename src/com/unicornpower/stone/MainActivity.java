@@ -1,18 +1,17 @@
 
 package com.unicornpower.stone;
 
+import android.app.Activity;
+import android.app.Dialog;
 import android.content.res.Configuration;
 import android.location.Location;
 import android.os.Bundle;
-import android.support.v4.app.ActionBarDrawerToggle;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.widget.DrawerLayout;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient.ConnectionCallbacks;
@@ -23,17 +22,11 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
-import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 
-public class MainActivity extends FragmentActivity implements LocationListener, ConnectionCallbacks, OnConnectionFailedListener {
-
-    private DrawerLayout mDrawerLayout;
-    private ListView mDrawerList;
-    private ActionBarDrawerToggle mDrawerToggle;
-    private CharSequence mDrawerTitle;
+public class MainActivity extends Activity implements LocationListener, ConnectionCallbacks, OnConnectionFailedListener {
+	
     private CharSequence mTitle;
-    private String[] mOptionTitles = {"Map", "Leave a Message", "Account", "Friends", "Settings"};
 	private GoogleMap map;
 	private LocationClient locationClient;
 	private Location currentLocation;
@@ -43,26 +36,30 @@ public class MainActivity extends FragmentActivity implements LocationListener, 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
-        mTitle = mDrawerTitle = getTitle();
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        mDrawerList = (ListView) findViewById(R.id.left_drawer);
+        setContentView(R.layout.fragment_map);
+        MapFragment fragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
 
-        // set up the drawer's list view with items and click listener
-        mDrawerList.setAdapter(new ArrayAdapter<String>(this,
-                R.layout.drawer_list_item, mOptionTitles));
-        mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
+        map = ((MapFragment) fragment).getMap();
+        map.setMyLocationEnabled(true);
+        
+        locationClient = new LocationClient(this, this, this);
+        locationClient.connect();
+        
+        final Dialog myDialog = new Dialog(this);
+        myDialog.setContentView(R.layout.dialog_message);
+        myDialog.setTitle("Send a Message");
+        
+        ((Button) findViewById(R.id.message_button)).setOnClickListener(new OnClickListener(){
 
-        // enable ActionBar app icon to behave as action to toggle nav drawer
-        getActionBar().setDisplayHomeAsUpEnabled(true);
-        getActionBar().setHomeButtonEnabled(true);
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				myDialog.show();
+			}
+        	
+        });
 
-        mDrawerLayout.setDrawerListener(mDrawerToggle);
-
-        if (savedInstanceState == null) {
-            selectItem(0);
-        }	
     }
 
     @Override
@@ -75,40 +72,13 @@ public class MainActivity extends FragmentActivity implements LocationListener, 
     /* Called whenever we call invalidateOptionsMenu() */
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        // If the nav drawer is open, hide action items related to the content view
-        boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
         return super.onPrepareOptionsMenu(menu);
     }
 
 
-    /* The click listner for ListView in the navigation drawer */
-    private class DrawerItemClickListener implements ListView.OnItemClickListener {
-        @Override
-        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            selectItem(position);
-        }
-    }
-
-    private void selectItem(int position) {
-        // update the main content by replacing fragments
-        Bundle args = new Bundle();
-        SupportMapFragment fragment = new SupportMapFragment();
-        MessageFragment fragment2 = new MessageFragment();
-        if (position == 0){
-        	map = ((SupportMapFragment) fragment).getMap();
-        	this.getSupportFragmentManager().beginTransaction().replace(R.id.content_frame, fragment).commit();
-        }else{
-            android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
-            fragmentManager.beginTransaction().replace(R.id.content_frame, fragment2).commit();
-        }
 
 
 
-        // update selected item and title, then close the drawer
-        mDrawerList.setItemChecked(position, true);
-        setTitle(mOptionTitles[position]);
-        mDrawerLayout.closeDrawer(mDrawerList);
-    }
 
     @Override
     public void setTitle(CharSequence title) {
@@ -130,7 +100,6 @@ public class MainActivity extends FragmentActivity implements LocationListener, 
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         // Pass any configuration change to the drawer toggls
-        mDrawerToggle.onConfigurationChanged(newConfig);
     }
     
 	@Override
@@ -139,12 +108,12 @@ public class MainActivity extends FragmentActivity implements LocationListener, 
 		locationRequest.setFastestInterval(1000);
 		locationRequest.setInterval(1000).setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 		locationClient.requestLocationUpdates(locationRequest, this);
-		
+		Toast.makeText(this, "Connected to location services", Toast.LENGTH_SHORT).show();
 	}
 
 	@Override
 	public void onConnectionFailed(ConnectionResult result) {
-	
+		Toast.makeText(this, "Connection Failed", Toast.LENGTH_SHORT).show();
 	}
 	
 	
@@ -161,6 +130,7 @@ public class MainActivity extends FragmentActivity implements LocationListener, 
 	public void onLocationChanged(Location location) {
 		LatLng loc = new LatLng(location.getLatitude(), location.getLongitude());
 //		Toast.makeText(this, "Location has changed", Toast.LENGTH_SHORT).show();
+		// if the app just started up then pan to the current location, otherwise let user pan elsewhere
 		if (!isInit) {
 			map.moveCamera(CameraUpdateFactory.newLatLngZoom(loc, 10));
 			isInit = true;
