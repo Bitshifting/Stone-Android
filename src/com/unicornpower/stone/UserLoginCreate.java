@@ -29,7 +29,7 @@ public class UserLoginCreate extends Dialog implements OnClickListener, OnCancel
 	@Override
 	protected void onCreate(final Bundle savedInstanceState) {
 		chooseCreateAccount = ((CheckBox) findViewById(R.id.create_user_checkbox));
-		loginCreateButton = ((CheckBox) findViewById(R.id.login_create_button));
+		loginCreateButton = ((Button) findViewById(R.id.login_create_button));
 		usernameField = ((EditText) findViewById(R.id.username_field));
 		
 		loginCreateButton.setOnClickListener(this);
@@ -44,8 +44,23 @@ public class UserLoginCreate extends Dialog implements OnClickListener, OnCancel
 
 	@Override
 	public void onClick(View v) {
-		// TODO Auto-generated method stub
+		switch(v.getId()) {
+		case R.id.login_create_button: 
+			userAccountForm();
+			break;
+		}
 		
+	}
+	/**
+	 * Used to create or login the user
+	 */
+	private void userAccountForm() {
+		if (isLogginButton) {
+			
+		}
+		else {
+			
+		}
 	}
 
 	@Override

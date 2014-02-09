@@ -2,7 +2,6 @@
 package com.unicornpower.stone;
 
 import android.app.Activity;
-import android.app.Dialog;
 import android.content.res.Configuration;
 import android.location.Location;
 import android.os.Bundle;
@@ -71,7 +70,7 @@ public class MainActivity extends Activity implements LocationListener, Connecti
     }
     
     private void showLoginDialogue() {
-    	final Dialog myDialog = new Dialog(this);
+    	final UserLoginCreate myDialog = new UserLoginCreate(this);
     	myDialog.setContentView(R.layout.user_login);
     	myDialog.setTitle("Login/Create Account");
     	myDialog.setCancelable(false);
