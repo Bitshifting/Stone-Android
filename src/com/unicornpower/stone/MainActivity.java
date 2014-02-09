@@ -10,7 +10,6 @@ import org.json.JSONObject;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.res.Configuration;
 import android.location.Location;
@@ -20,7 +19,6 @@ import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -63,16 +61,11 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 	private ArrayList<JSONObject> jsonF = new ArrayList<JSONObject>();
 	private ArrayList<MessageCrap> messageOs = new ArrayList<MessageCrap>();
 	private ArrayList<Friend> friendList = new ArrayList<Friend>();
-	private ArrayList<MarkerOptions> markers = new ArrayList<MarkerOptions>();
-	private static final String PROVIDER = "flp";
-	private static final double LAT = 40.42853;
-	private static final double LNG = -86.9222;
-	private Location l;
+	private String loggedInUsername;
+	private String loggedInUserId;
 	private DrawerLayout mDrawerLayout;
 	private ListView mDrawerList;
 	private ActionBarDrawerToggle mDrawerToggle;
-	private String uid = "52f6fa1247feac5464614016";
-
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -84,39 +77,54 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 		mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 		mDrawerList = (ListView) findViewById(R.id.left_drawer);
 
-		 mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
-	                R.drawable.ic_drawer, R.string.drawer_open, R.string.drawer_close) {
+		mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
+				R.drawable.ic_drawer, R.string.drawer_open, R.string.drawer_close) {
 
-	            /** Called when a drawer has settled in a completely closed state. */
-	            public void onDrawerClosed(View view) {
-	                super.onDrawerClosed(view);
-	                getActionBar().setTitle(mTitle);
-	                invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
-	            }
+			/** Called when a drawer has settled in a completely closed state. */
+			public void onDrawerClosed(View view) {
+				super.onDrawerClosed(view);
+				getActionBar().setTitle(mTitle);
+				invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+			}
 
-	            /** Called when a drawer has settled in a completely open state. */
-	            public void onDrawerOpened(View drawerView) {
-	                super.onDrawerOpened(drawerView);
-	                getActionBar().setTitle(mDrawerTitle);
-	                invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
-	            }
-	        };
+			/** Called when a drawer has settled in a completely open state. */
+			public void onDrawerOpened(View drawerView) {
+				super.onDrawerOpened(drawerView);
+				getActionBar().setTitle(mDrawerTitle);
+				invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+			}
+		};
 
-	        // Set the drawer toggle as the DrawerListener
-	        mDrawerLayout.setDrawerListener(mDrawerToggle);
+		// Set the drawer toggle as the DrawerListener
+		mDrawerLayout.setDrawerListener(mDrawerToggle);
 
-		
-		
+
+
 		map = ((MapFragment) fragment).getMap();
 		map.setMyLocationEnabled(true);
+
 		locationClient = new LocationClient(this, this, this);
 		locationClient.connect();
 
+		
 
-		final Dialog myDialog = new Dialog(this);
+		// check to see if the user is already logged in
+		loggedInUsername = PreferencesUtil.getFromPrefs(this, PreferencesUtil.PREFS_LOGIN_USERNAME_KEY, PreferencesUtil.PREFS_LOGIN_USERNAME_KEY);
+		loggedInUserId = PreferencesUtil.getFromPrefs(this, PreferencesUtil.PREFS_LOGIN_USER_ID_KEY, PreferencesUtil.PREFS_LOGIN_USER_ID_KEY);
+		if (loggedInUsername == PreferencesUtil.PREFS_LOGIN_USERNAME_KEY || loggedInUserId == PreferencesUtil.PREFS_LOGIN_USER_ID_KEY) {
+			showLoginDialogue();
+		}
+		else {
+			Log.e("Username", loggedInUsername);
+			Toast.makeText(this, loggedInUsername, Toast.LENGTH_LONG).show();
+		}
+		
+		getFriendsList();
+		
+		final UserMessage myDialog = new UserMessage(this, friendList, currentLocation);
 		myDialog.setContentView(R.layout.dialog_message);
 		myDialog.setTitle("Send a Message");
-
+		
 		((Button) findViewById(R.id.message_button)).setOnClickListener(new OnClickListener(){
 
 			@Override
@@ -126,27 +134,25 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 			}
 
 		});
-		
+
 		((Button) findViewById(R.id.add_friend_button)).setOnClickListener(new OnClickListener(){
 
 			@Override
 			public void onClick(View v) {
 				addFriend();
-				
+
 			}
-			
+
 		});
-		getFriendsList();
-
-
+		
+		
 	}
 
 	public void getFriendsList(){
 		ServerAPITask friendRequest = new ServerAPITask();
 		friendList.clear();
 		//change this to get the real user ID at some point
-		String userId = "52f6fa1247feac5464614016";
-		friendRequest.setAPIRequest("http://riptide.alexkersten.com:3333/stoneapi/account/getfollowees/" + userId);
+		friendRequest.setAPIRequest("http://riptide.alexkersten.com:3333/stoneapi/account/getfollowees/" + loggedInUserId);
 		try{
 			String friends = friendRequest.execute("Hello").get();
 
@@ -201,7 +207,7 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 			public void onClick(DialogInterface dialog, int which) {
 				String addReq = inputT.getText().toString();
 				ServerAPITask addFriend = new ServerAPITask();
-				addFriend.setAPIRequest("http://riptide.alexkersten.com:3333/stoneapi/account/addfriend/" + uid + "/" + addReq);
+				addFriend.setAPIRequest("http://riptide.alexkersten.com:3333/stoneapi/account/addfriend/" + loggedInUserId + "/" + addReq);
 				// TODO Auto-generated method stub
 				try {
 					addFriend.execute("Hello").get();
@@ -211,14 +217,14 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 					// TODO Auto-generated catch block
 					Toast.makeText(getApplicationContext(), "Error, please try again", Toast.LENGTH_LONG).show();
 				}
-				
+
 				mDrawerLayout.closeDrawers();
 			}
 
 		})
 		.show();
 	}
-	
+
 	private void removeFriend(int position){
 		final Friend toDelete = friendList.get(position);
 		new AlertDialog.Builder(this)
@@ -229,7 +235,7 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
 				ServerAPITask deleteFriend = new ServerAPITask();
-				deleteFriend.setAPIRequest("http://riptide.alexkersten.com:3333/stoneapi/account/delfriend/" + uid + "/" + toDelete.getName());
+				deleteFriend.setAPIRequest("http://riptide.alexkersten.com:3333/stoneapi/account/delfriend/" + loggedInUserId + "/" + toDelete.getName());
 				// TODO Auto-generated method stub
 				try {
 					deleteFriend.execute("Hello").get();
@@ -239,7 +245,7 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 					// TODO Auto-generated catch block
 					Toast.makeText(getApplicationContext(), "Error, please try again", Toast.LENGTH_LONG).show();
 				}
-					
+
 				mDrawerLayout.closeDrawers();
 			}
 
@@ -247,11 +253,12 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 		.show();
 	}
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		MenuInflater inflater = getMenuInflater();
-		inflater.inflate(R.menu.main, menu);
-		return super.onCreateOptionsMenu(menu);
+	private void showLoginDialogue() {
+		final UserLoginCreate myDialog = new UserLoginCreate(this);
+		myDialog.setContentView(R.layout.user_login);
+		myDialog.setTitle("Login/Create Account");
+		myDialog.setCancelable(false);
+		myDialog.show();
 	}
 
 	/* Called whenever we call invalidateOptionsMenu() */
@@ -260,17 +267,12 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 		return super.onPrepareOptionsMenu(menu);
 	}
 
-
 	@Override
 	public void setTitle(CharSequence title) {
 		mTitle = title;
 		getActionBar().setTitle(mTitle);
 	}
 
-	/**
-	 * When using the ActionBarDrawerToggle, you must call it during
-	 * onPostCreate() and onConfigurationChanged()...
-	 */
 
 	@Override
 	protected void onPostCreate(Bundle savedInstanceState) {
@@ -289,14 +291,9 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 		locationRequest.setFastestInterval(1000);
 		locationRequest.setInterval(1000).setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 		locationClient.requestLocationUpdates(locationRequest, this);
-		//currentLocation = locationClient.getLastLocation();
+		currentLocation = locationClient.getLastLocation();
 
 		Toast.makeText(this, "Connected to location services", Toast.LENGTH_SHORT).show();
-		l = new Location(PROVIDER);
-		l.setLatitude(LAT);
-		l.setLongitude(LNG);
-		//locationClient.setMockLocation(l);
-		currentLocation = new Location(l);
 		populateMap();
 
 	}
@@ -340,11 +337,8 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 		messageOs.clear();
 		map.clear();
 		//getMapTask.setAPIRequest("http://riptide.alexkersten.com:3333/stoneapi/message/post/hello/40.42853/-86.9222/SmartAssSam/public");
-		if (currentLocation !=null){
-			getMapTask.setAPIRequest("http://riptide.alexkersten.com:3333/stoneapi/message/get/" + currentLocation.getLatitude() + "/" + currentLocation.getLongitude() + "86/5280");
-		}else{
-			getMapTask.setAPIRequest("http://riptide.alexkersten.com:3333/stoneapi/message/get/" + l.getLatitude() + "/" + l.getLongitude() + "86/5280");
-		}
+		getMapTask.setAPIRequest("http://riptide.alexkersten.com:3333/stoneapi/message/get/" + currentLocation.getLatitude() + "/" + currentLocation.getLongitude() + "86/5280");
+
 		try {
 			String s = getMapTask.execute("Hello").get();
 
@@ -387,7 +381,7 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 			jso.printStackTrace();
 		} catch(Exception e){
 			Toast.makeText(getApplicationContext(), "Internal Error. Please Try Again", Toast.LENGTH_LONG).show();
-			
+
 		}
 
 

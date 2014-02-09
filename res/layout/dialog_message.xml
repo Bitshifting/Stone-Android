@@ -4,6 +4,17 @@
     android:layout_height="wrap_content"
     android:gravity="center"
     android:orientation="vertical" >
+
+    <AutoCompleteTextView
+        android:id="@+id/friend_search"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:hint="Send private message to friend..." >
+
+        <requestFocus />
+    </AutoCompleteTextView>
+
     <EditText
         android:id="@+id/message_dialog_message"
         android:layout_marginTop="16dp"

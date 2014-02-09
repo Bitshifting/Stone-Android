@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/LinearLayout1"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <CheckBox
+        android:id="@+id/create_user_checkbox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Create new account" />
+
+    <EditText
+        android:id="@+id/username_field"
+        android:layout_marginTop="16dp"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:hint="Username" />
+    <LinearLayout 
+        android:layout_marginTop="16dp"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:orientation="horizontal" >
+
+        <Button
+            android:id="@+id/login_create_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Login" />
+        
+    </LinearLayout>
+
+</LinearLayout>
