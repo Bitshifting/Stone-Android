@@ -3,27 +3,19 @@ package com.unicornpower.stone;
 public class Friend {
 	
 	private String mname;
-	private boolean isChecked;
-	private int id;
+	private String id;
 	
-	public Friend(String name, int id){
+	public Friend(String name, String string){
 		mname = name;
-		isChecked = false;
-		this.id = id;
+		this.id = string;
 	}
 	public String getName(){
 		return mname;
 	}
 	
-	public boolean getChecked(){
-		return isChecked;
-	}
-	public int getId(){
+	public String getId(){
 		return id;
 	}
 	
-	public void setChecked(boolean c){
-		isChecked = c;
-	}
 
 }
