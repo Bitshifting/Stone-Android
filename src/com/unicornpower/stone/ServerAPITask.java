@@ -19,6 +19,7 @@ public class ServerAPITask extends AsyncTask<String, Void, String>{
 	private Exception exception;
 	private String request;
 	BufferedReader in = null;
+	
 	public void setAPIRequest(String s){
 		this.request = s;
 	}
