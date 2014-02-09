@@ -9,13 +9,17 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 
+import android.content.Context;
 import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 
 public class ServerAPITask extends AsyncTask<String, Void, String>{
 	private Exception exception;
 	private String request;
 	BufferedReader in = null;
+	
 	public void setAPIRequest(String s){
 		this.request = s;
 	}
@@ -36,5 +40,14 @@ public class ServerAPITask extends AsyncTask<String, Void, String>{
 			Log.e("Exception", e.toString());
 			return null;
 		}
+	}
+	
+	@Override
+	protected void onPostExecute(String s){
+		super.onPostExecute(s);
+		Message msg = new Message();
+		msg.obj = s;
+//		Handler mHandler = new Handler();
+//		mHandler.sendMessage(msg);
 	}
 }
