@@ -33,7 +33,6 @@ public class ServerAPITask extends AsyncTask<String, Void, String>{
 			HttpResponse response = client.execute(get);
 			in = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
 			String ss = in.readLine();
-			Log.e("RESPONSE", ss);
 			return ss;
 		}catch (Exception e){
 			exception = e;

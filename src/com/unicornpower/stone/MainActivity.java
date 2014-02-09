@@ -9,16 +9,20 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.res.Configuration;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -184,7 +188,6 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 		}
 		try {
 			String s = getMapTask.execute("Hello").get();
-			Log.e("Response String", s);
 
 			jsonResponse = new JSONArray(s);
 			for (int i = 0; i < jsonResponse.length(); i++){
@@ -208,11 +211,11 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 						if (messageOs.get(i).marker.equals(marker))
 							mmessage = messageOs.get(i);	
 					}
-					
+
 					createMarkerDialog(mmessage);
 					return false;
 				}
-				
+
 			});
 
 		} catch (InterruptedException e) {
@@ -227,8 +230,54 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 
 
 	}
-	
+
 	public void createMarkerDialog(MessageCrap m){
-		
+		final View addView = LayoutInflater.from(this).inflate(R.layout.marker_dialog, null);
+		TextView author = (TextView)addView.findViewById(R.id.message_author);
+		final TextView rating = (TextView)addView.findViewById(R.id.message_rating);
+		rating.setText("Rating: " + m.rating);
+		author.setText(m.username);		
+		final String id = m.id;
+		final double mmrating = m.rating;
+		new AlertDialog.Builder(this)
+		.setTitle(m.message)
+		.setView(addView)
+		.setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
+			
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				dialog.cancel();
+				// TODO Auto-generated method stub
+				
+			}
+		})
+		.setPositiveButton("Vote Down", new DialogInterface.OnClickListener() {
+			
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				rating.setText("Rating: " + (mmrating));
+				ServerAPITask request = new ServerAPITask();
+				request.setAPIRequest("http://riptide.alexkersten.com:3333/stoneapi/message/vote/" + id + "/1/-1");
+				request.execute("Hello");
+				dialog.dismiss();
+				// TODO Auto-generated method stub
+				
+			}
+		})
+		.setNegativeButton("Vote Up", new DialogInterface.OnClickListener(){
+
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				rating.setText("Rating: " + (mmrating));
+				ServerAPITask request = new ServerAPITask();
+				request.setAPIRequest("http://riptide.alexkersten.com:3333/stoneapi/message/vote/" + id + "/1/1");
+				request.execute("Hello");
+				dialog.dismiss();
+				// TODO Auto-generated method stub
+				
+			}
+			
+		})
+		.show();
 	}
 }
