@@ -33,6 +33,9 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 	private LocationRequest locationRequest;
 	private boolean isInit = false;
 	
+	private String loggedInUsername;
+	private String loggedInUserId;
+	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,7 +49,7 @@ public class MainActivity extends Activity implements LocationListener, Connecti
         locationClient = new LocationClient(this, this, this);
         locationClient.connect();
         
-        final Dialog myDialog = new Dialog(this);
+        final UserMessage myDialog = new UserMessage(this);
         myDialog.setContentView(R.layout.dialog_message);
         myDialog.setTitle("Send a Message");
         
@@ -59,7 +62,20 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 			}
         	
         });
-
+        
+        // check to see if the user is already logged in
+        loggedInUsername = PreferencesUtil.getFromPrefs(this, PreferencesUtil.PREFS_LOGIN_USERNAME_KEY, PreferencesUtil.PREFS_LOGIN_USERNAME_KEY);
+        if (loggedInUsername == PreferencesUtil.PREFS_LOGIN_USERNAME_KEY) {
+        	showLoginDialogue();
+        }
+    }
+    
+    private void showLoginDialogue() {
+    	final Dialog myDialog = new Dialog(this);
+    	myDialog.setContentView(R.layout.user_login);
+    	myDialog.setTitle("Login/Create Account");
+    	myDialog.setCancelable(false);
+    	myDialog.show();
     }
 
     @Override
@@ -74,11 +90,6 @@ public class MainActivity extends Activity implements LocationListener, Connecti
     public boolean onPrepareOptionsMenu(Menu menu) {
         return super.onPrepareOptionsMenu(menu);
     }
-
-
-
-
-
 
     @Override
     public void setTitle(CharSequence title) {
@@ -128,6 +139,7 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 
 	@Override
 	public void onLocationChanged(Location location) {
+		currentLocation  = location;
 		LatLng loc = new LatLng(location.getLatitude(), location.getLongitude());
 //		Toast.makeText(this, "Location has changed", Toast.LENGTH_SHORT).show();
 		// if the app just started up then pan to the current location, otherwise let user pan elsewhere
