@@ -30,6 +30,15 @@
             android:layout_margin="8dp"
             android:padding="10dp"
             android:text="Write a Message" />
+        <Button
+            android:id="@+id/add_friend_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"
+            android:layout_margin="8dp"
+            android:padding="10dp"
+            android:text="+Friend"/>
     </RelativeLayout>
 
     <!--

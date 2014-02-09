@@ -26,7 +26,10 @@ import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
+import android.widget.RelativeLayout.LayoutParams;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -123,6 +126,16 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 			}
 
 		});
+		
+		((Button) findViewById(R.id.add_friend_button)).setOnClickListener(new OnClickListener(){
+
+			@Override
+			public void onClick(View v) {
+				addFriend();
+				
+			}
+			
+		});
 		getFriendsList();
 
 
@@ -130,6 +143,7 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 
 	public void getFriendsList(){
 		ServerAPITask friendRequest = new ServerAPITask();
+		friendList.clear();
 		//change this to get the real user ID at some point
 		String userId = "52f6fa1247feac5464614016";
 		friendRequest.setAPIRequest("http://riptide.alexkersten.com:3333/stoneapi/account/getfollowees/" + userId);
@@ -172,6 +186,38 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 		removeFriend(position);
 	}
 
+	public void addFriend(){
+		final EditText inputT = new EditText(this);
+		inputT.setLayoutParams(new LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT));
+		inputT.setHint("Friend Name");
+		new AlertDialog.Builder(this)
+		.setTitle("Add Friend")
+		.setView(inputT)
+		.setPositiveButton("Cancel", null)
+
+		.setNegativeButton("Add", new DialogInterface.OnClickListener(){
+
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				String addReq = inputT.getText().toString();
+				ServerAPITask addFriend = new ServerAPITask();
+				addFriend.setAPIRequest("http://riptide.alexkersten.com:3333/stoneapi/account/addfriend/" + uid + "/" + addReq);
+				// TODO Auto-generated method stub
+				try {
+					addFriend.execute("Hello").get();
+					mDrawerList.removeAllViewsInLayout();
+					getFriendsList();
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					Toast.makeText(getApplicationContext(), "Error, please try again", Toast.LENGTH_LONG).show();
+				}
+				
+				mDrawerLayout.closeDrawers();
+			}
+
+		})
+		.show();
+	}
 	
 	private void removeFriend(int position){
 		final Friend toDelete = friendList.get(position);
@@ -183,10 +229,17 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
 				ServerAPITask deleteFriend = new ServerAPITask();
-				deleteFriend.setAPIRequest("http://riptide.alexkersten.com:3333/stoneapi/account/delfriend/uid/" + toDelete.getName());
+				deleteFriend.setAPIRequest("http://riptide.alexkersten.com:3333/stoneapi/account/delfriend/" + uid + "/" + toDelete.getName());
 				// TODO Auto-generated method stub
-				deleteFriend.execute("Hello");
-				getFriendsList();
+				try {
+					deleteFriend.execute("Hello").get();
+					mDrawerList.removeAllViewsInLayout();
+					getFriendsList();
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					Toast.makeText(getApplicationContext(), "Error, please try again", Toast.LENGTH_LONG).show();
+				}
+					
 				mDrawerLayout.closeDrawers();
 			}
 
@@ -328,6 +381,9 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 			e.printStackTrace();
 		} catch (JSONException jso) {
 			jso.printStackTrace();
+		} catch(Exception e){
+			Toast.makeText(getApplicationContext(), "Internal Error. Please Try Again", Toast.LENGTH_LONG).show();
+			
 		}
 
 
