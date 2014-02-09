@@ -14,7 +14,6 @@ import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -55,48 +54,52 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 	private Location l;
 	private String loggedInUsername;
 	private String loggedInUserId;
-	
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.fragment_map);
-        MapFragment fragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		
+		setContentView(R.layout.fragment_map);
+		MapFragment fragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
 
-        map = ((MapFragment) fragment).getMap();
-        map.setMyLocationEnabled(true);
-        
-        locationClient = new LocationClient(this, this, this);
-        locationClient.connect();
-        
-        final UserMessage myDialog = new UserMessage(this);
-        myDialog.setContentView(R.layout.dialog_message);
-        myDialog.setTitle("Send a Message");
-        
-        ((Button) findViewById(R.id.message_button)).setOnClickListener(new OnClickListener(){
+		map = ((MapFragment) fragment).getMap();
+		map.setMyLocationEnabled(true);
+
+		locationClient = new LocationClient(this, this, this);
+		locationClient.connect();
+
+		final UserMessage myDialog = new UserMessage(this);
+		myDialog.setContentView(R.layout.dialog_message);
+		myDialog.setTitle("Send a Message");
+
+		((Button) findViewById(R.id.message_button)).setOnClickListener(new OnClickListener(){
 
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
 				myDialog.show();
 			}
-        	
-        });
-        
-        // check to see if the user is already logged in
-        loggedInUsername = PreferencesUtil.getFromPrefs(this, PreferencesUtil.PREFS_LOGIN_USERNAME_KEY, PreferencesUtil.PREFS_LOGIN_USERNAME_KEY);
-        if (loggedInUsername == PreferencesUtil.PREFS_LOGIN_USERNAME_KEY) {
-        	showLoginDialogue();
-        }
-    }
-    
-    private void showLoginDialogue() {
-    	final UserLoginCreate myDialog = new UserLoginCreate(this);
-    	myDialog.setContentView(R.layout.user_login);
-    	myDialog.setTitle("Login/Create Account");
-    	myDialog.setCancelable(false);
-    	myDialog.show();
-    }
+
+		});
+
+		// check to see if the user is already logged in
+		loggedInUsername = PreferencesUtil.getFromPrefs(this, PreferencesUtil.PREFS_LOGIN_USERNAME_KEY, PreferencesUtil.PREFS_LOGIN_USERNAME_KEY);
+		if (loggedInUsername == PreferencesUtil.PREFS_LOGIN_USERNAME_KEY) {
+			showLoginDialogue();
+		}
+		else {
+			Log.e("Username", loggedInUsername);
+			Toast.makeText(this, loggedInUsername, Toast.LENGTH_LONG);
+		}
+	}
+
+	private void showLoginDialogue() {
+		final UserLoginCreate myDialog = new UserLoginCreate(this);
+		myDialog.setContentView(R.layout.user_login);
+		myDialog.setTitle("Login/Create Account");
+		myDialog.setCancelable(false);
+		myDialog.show();
+	}
 
 	/* Called whenever we call invalidateOptionsMenu() */
 	@Override
@@ -106,11 +109,11 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 
 
 
-    @Override
-    public void setTitle(CharSequence title) {
-        mTitle = title;
-        getActionBar().setTitle(mTitle);
-    }
+	@Override
+	public void setTitle(CharSequence title) {
+		mTitle = title;
+		getActionBar().setTitle(mTitle);
+	}
 
 
 	@Override
@@ -130,14 +133,9 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 		locationRequest.setFastestInterval(1000);
 		locationRequest.setInterval(1000).setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 		locationClient.requestLocationUpdates(locationRequest, this);
-		//currentLocation = locationClient.getLastLocation();
+		currentLocation = locationClient.getLastLocation();
 
 		Toast.makeText(this, "Connected to location services", Toast.LENGTH_SHORT).show();
-		l = new Location(PROVIDER);
-		l.setLatitude(LAT);
-		l.setLongitude(LNG);
-		//locationClient.setMockLocation(l);
-		currentLocation = new Location(l);
 		populateMap();
 
 	}
@@ -160,7 +158,6 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 
 	@Override
 	public void onLocationChanged(Location location) {
-		currentLocation  = location;
 		LatLng loc = new LatLng(location.getLatitude(), location.getLongitude());
 		//		Toast.makeText(this, "Location has changed", Toast.LENGTH_SHORT).show();
 		// if the app just started up then pan to the current location, otherwise let user pan elsewhere
@@ -178,11 +175,8 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 	public void populateMap(){
 		ServerAPITask getMapTask = new ServerAPITask();
 		//getMapTask.setAPIRequest("http://riptide.alexkersten.com:3333/stoneapi/message/post/hello/40.42853/-86.9222/SmartAssSam/public");
-		if (currentLocation !=null){
-			getMapTask.setAPIRequest("http://riptide.alexkersten.com:3333/stoneapi/message/get/" + currentLocation.getLatitude() + "/" + currentLocation.getLongitude() + "86/5280");
-		}else{
-			getMapTask.setAPIRequest("http://riptide.alexkersten.com:3333/stoneapi/message/get/" + l.getLatitude() + "/" + l.getLongitude() + "86/5280");
-		}
+		getMapTask.setAPIRequest("http://riptide.alexkersten.com:3333/stoneapi/message/get/" + currentLocation.getLatitude() + "/" + currentLocation.getLongitude() + "86/5280");
+
 		try {
 			String s = getMapTask.execute("Hello").get();
 			Log.e("Response String", s);
@@ -209,11 +203,11 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 						if (messageOs.get(i).marker.equals(marker))
 							mmessage = messageOs.get(i);	
 					}
-					
+
 					createMarkerDialog(mmessage);
 					return false;
 				}
-				
+
 			});
 
 		} catch (InterruptedException e) {
@@ -228,8 +222,8 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 
 
 	}
-	
+
 	public void createMarkerDialog(MessageCrap m){
-		
+
 	}
 }

@@ -7,6 +7,7 @@ import android.preference.PreferenceManager;
 public class PreferencesUtil {
 
 	public static final String PREFS_LOGIN_USERNAME_KEY = "__USERNAME__" ;
+	public static final String PREFS_LOGIN_USER_ID_KEY = "__U_ID__" ;
     //public static final String PREFS_LOGIN_PASSWORD_KEY = "__PASSWORD__" ;
 	
 	public static void saveToPrefs(Context context, String key, String value) {
