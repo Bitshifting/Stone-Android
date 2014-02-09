@@ -320,6 +320,7 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 	@Override
 	public void onLocationChanged(Location location) {
 		LatLng loc = new LatLng(location.getLatitude(), location.getLongitude());
+		populateMap();
 		//		Toast.makeText(this, "Location has changed", Toast.LENGTH_SHORT).show();
 		// if the app just started up then pan to the current location, otherwise let user pan elsewhere
 		if (!isInit) {
@@ -335,6 +336,9 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 	 */
 	public void populateMap(){
 		ServerAPITask getMapTask = new ServerAPITask();
+		jsonObjects.clear();
+		messageOs.clear();
+		map.clear();
 		//getMapTask.setAPIRequest("http://riptide.alexkersten.com:3333/stoneapi/message/post/hello/40.42853/-86.9222/SmartAssSam/public");
 		if (currentLocation !=null){
 			getMapTask.setAPIRequest("http://riptide.alexkersten.com:3333/stoneapi/message/get/" + currentLocation.getLatitude() + "/" + currentLocation.getLongitude() + "86/5280");
