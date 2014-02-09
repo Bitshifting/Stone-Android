@@ -10,7 +10,6 @@ import org.json.JSONObject;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.res.Configuration;
 import android.location.Location;
@@ -62,17 +61,11 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 	private ArrayList<JSONObject> jsonF = new ArrayList<JSONObject>();
 	private ArrayList<MessageCrap> messageOs = new ArrayList<MessageCrap>();
 	private ArrayList<Friend> friendList = new ArrayList<Friend>();
-	private ArrayList<MarkerOptions> markers = new ArrayList<MarkerOptions>();
-	private static final String PROVIDER = "flp";
-	private static final double LAT = 40.42853;
-	private static final double LNG = -86.9222;
-	private Location l;
 	private String loggedInUsername;
 	private String loggedInUserId;
 	private DrawerLayout mDrawerLayout;
 	private ListView mDrawerList;
 	private ActionBarDrawerToggle mDrawerToggle;
-	private String uid = "52f6fa1247feac5464614016";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -113,10 +106,25 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 		locationClient = new LocationClient(this, this, this);
 		locationClient.connect();
 
-		final UserMessage myDialog = new UserMessage(this);
+		
+
+		// check to see if the user is already logged in
+		loggedInUsername = PreferencesUtil.getFromPrefs(this, PreferencesUtil.PREFS_LOGIN_USERNAME_KEY, PreferencesUtil.PREFS_LOGIN_USERNAME_KEY);
+		loggedInUserId = PreferencesUtil.getFromPrefs(this, PreferencesUtil.PREFS_LOGIN_USER_ID_KEY, PreferencesUtil.PREFS_LOGIN_USER_ID_KEY);
+		if (loggedInUsername == PreferencesUtil.PREFS_LOGIN_USERNAME_KEY || loggedInUserId == PreferencesUtil.PREFS_LOGIN_USER_ID_KEY) {
+			showLoginDialogue();
+		}
+		else {
+			Log.e("Username", loggedInUsername);
+			Toast.makeText(this, loggedInUsername, Toast.LENGTH_LONG).show();
+		}
+		
+		getFriendsList();
+		
+		final UserMessage myDialog = new UserMessage(this, friendList, currentLocation);
 		myDialog.setContentView(R.layout.dialog_message);
 		myDialog.setTitle("Send a Message");
-
+		
 		((Button) findViewById(R.id.message_button)).setOnClickListener(new OnClickListener(){
 
 			@Override
@@ -136,26 +144,15 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 			}
 
 		});
-		getFriendsList();
-
-		// check to see if the user is already logged in
-		loggedInUsername = PreferencesUtil.getFromPrefs(this, PreferencesUtil.PREFS_LOGIN_USERNAME_KEY, PreferencesUtil.PREFS_LOGIN_USERNAME_KEY);
-		if (loggedInUsername == PreferencesUtil.PREFS_LOGIN_USERNAME_KEY) {
-			showLoginDialogue();
-		}
-		else {
-			Log.e("Username", loggedInUsername);
-			Toast.makeText(this, loggedInUsername, Toast.LENGTH_LONG);
-		}
-
+		
+		
 	}
 
 	public void getFriendsList(){
 		ServerAPITask friendRequest = new ServerAPITask();
 		friendList.clear();
 		//change this to get the real user ID at some point
-		String userId = "52f6fa1247feac5464614016";
-		friendRequest.setAPIRequest("http://riptide.alexkersten.com:3333/stoneapi/account/getfollowees/" + userId);
+		friendRequest.setAPIRequest("http://riptide.alexkersten.com:3333/stoneapi/account/getfollowees/" + loggedInUserId);
 		try{
 			String friends = friendRequest.execute("Hello").get();
 
@@ -210,7 +207,7 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 			public void onClick(DialogInterface dialog, int which) {
 				String addReq = inputT.getText().toString();
 				ServerAPITask addFriend = new ServerAPITask();
-				addFriend.setAPIRequest("http://riptide.alexkersten.com:3333/stoneapi/account/addfriend/" + uid + "/" + addReq);
+				addFriend.setAPIRequest("http://riptide.alexkersten.com:3333/stoneapi/account/addfriend/" + loggedInUserId + "/" + addReq);
 				// TODO Auto-generated method stub
 				try {
 					addFriend.execute("Hello").get();
@@ -238,7 +235,7 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
 				ServerAPITask deleteFriend = new ServerAPITask();
-				deleteFriend.setAPIRequest("http://riptide.alexkersten.com:3333/stoneapi/account/delfriend/" + uid + "/" + toDelete.getName());
+				deleteFriend.setAPIRequest("http://riptide.alexkersten.com:3333/stoneapi/account/delfriend/" + loggedInUserId + "/" + toDelete.getName());
 				// TODO Auto-generated method stub
 				try {
 					deleteFriend.execute("Hello").get();
