@@ -30,7 +30,7 @@ public class FriendListAdapter extends BaseAdapter{
 		
 		//Make the names into friend objects
 		for (int i = 0; i < nameList.size(); i++){
-			friendList.add(new Friend(nameList.get(i), i));
+			friendList.add(new Friend(nameList.get(i), "" + i));
 		}
 	}
 	@Override
@@ -61,13 +61,11 @@ public class FriendListAdapter extends BaseAdapter{
 			newView = convertView;
 		}
 		((TextView) newView.findViewById(R.id.friend_text)).setText(friendList.get(position).getName());
-		((CheckBox) newView.findViewById(R.id.friend_check)).setChecked(friendList.get(position).getChecked());
 		newView.setOnClickListener(new OnClickListener(){
 
 			@Override
 			public void onClick(View v) {
 				((CheckBox) v.findViewById(R.id.friend_check)).setChecked(!((CheckBox) v.findViewById(R.id.friend_check)).isChecked());
-				friendList.get(position).setChecked(!friendList.get(position).getChecked());
 			}
 			
 		});

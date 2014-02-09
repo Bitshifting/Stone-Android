@@ -15,13 +15,18 @@ import android.content.DialogInterface;
 import android.content.res.Configuration;
 import android.location.Location;
 import android.os.Bundle;
+import android.support.v4.app.ActionBarDrawerToggle;
+import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -43,7 +48,8 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MainActivity extends Activity implements LocationListener, ConnectionCallbacks, OnConnectionFailedListener {
 
-	private CharSequence mTitle;
+	private CharSequence mTitle = "Stone";
+	private CharSequence mDrawerTitle = "Friends";
 	private GoogleMap map;
 	private LocationClient locationClient;
 	private Location currentLocation;
@@ -51,21 +57,53 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 	private boolean isInit = false;
 	private JSONArray jsonResponse;
 	private ArrayList<JSONObject> jsonObjects = new ArrayList<JSONObject>();
+	private ArrayList<JSONObject> jsonF = new ArrayList<JSONObject>();
 	private ArrayList<MessageCrap> messageOs = new ArrayList<MessageCrap>();
+	private ArrayList<Friend> friendList = new ArrayList<Friend>();
 	private ArrayList<MarkerOptions> markers = new ArrayList<MarkerOptions>();
 	private static final String PROVIDER = "flp";
 	private static final double LAT = 40.42853;
 	private static final double LNG = -86.9222;
-	private static final float ACCURACY = 3.0f;
 	private Location l;
+	private DrawerLayout mDrawerLayout;
+	private ListView mDrawerList;
+	private ActionBarDrawerToggle mDrawerToggle;
+	private String uid = "52f6fa1247feac5464614016";
+
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		setContentView(R.layout.fragment_map);
+		setContentView(R.layout.activity_main);
 		MapFragment fragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
 
+		mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+		mDrawerList = (ListView) findViewById(R.id.left_drawer);
+
+		 mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
+	                R.drawable.ic_drawer, R.string.drawer_open, R.string.drawer_close) {
+
+	            /** Called when a drawer has settled in a completely closed state. */
+	            public void onDrawerClosed(View view) {
+	                super.onDrawerClosed(view);
+	                getActionBar().setTitle(mTitle);
+	                invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+	            }
+
+	            /** Called when a drawer has settled in a completely open state. */
+	            public void onDrawerOpened(View drawerView) {
+	                super.onDrawerOpened(drawerView);
+	                getActionBar().setTitle(mDrawerTitle);
+	                invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+	            }
+	        };
+
+	        // Set the drawer toggle as the DrawerListener
+	        mDrawerLayout.setDrawerListener(mDrawerToggle);
+
+		
+		
 		map = ((MapFragment) fragment).getMap();
 		map.setMyLocationEnabled(true);
 		locationClient = new LocationClient(this, this, this);
@@ -85,7 +123,75 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 			}
 
 		});
+		getFriendsList();
 
+
+	}
+
+	public void getFriendsList(){
+		ServerAPITask friendRequest = new ServerAPITask();
+		//change this to get the real user ID at some point
+		String userId = "52f6fa1247feac5464614016";
+		friendRequest.setAPIRequest("http://riptide.alexkersten.com:3333/stoneapi/account/getfollowees/" + userId);
+		try{
+			String friends = friendRequest.execute("Hello").get();
+
+			JSONArray jsonFriends = new JSONArray(friends);
+			Log.e("friendjson", "" + friends);
+			for (int i = 0; i < jsonFriends.length(); i++){
+				jsonF.add(jsonFriends.getJSONObject(i));
+				friendList.add(new Friend(jsonF.get(i).getString("followeeName"), jsonF.get(i).getString("followee")));
+				Log.e("friend","added " + friendList.get(i) + "!");
+			}
+
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		String[] mFriendNames = new String[friendList.size()];
+		for (int i = 0; i < mFriendNames.length; i++){
+			mFriendNames[i] = friendList.get(i).getName();
+		}
+		mDrawerList.setAdapter(new ArrayAdapter<String>(this,
+				R.layout.drawer_list_item, mFriendNames));
+		//Set the list's click listener
+		mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
+	}
+
+	private class DrawerItemClickListener implements ListView.OnItemClickListener {
+		@Override
+		public void onItemClick(AdapterView parent, View view, int position, long id) {
+			selectItem(position);
+		}
+	}
+
+	/** Swaps fragments in the main content view */
+	private void selectItem(int position) {
+
+		// Highlight the selected item, update the title, and close the drawer
+		//setTitle(mPlanetTitles[position]);
+		removeFriend(position);
+	}
+
+	
+	private void removeFriend(int position){
+		final Friend toDelete = friendList.get(position);
+		new AlertDialog.Builder(this)
+		.setTitle("Really delete " + toDelete.getName() +"?")
+		.setPositiveButton("Cancel", null)
+		.setNegativeButton("Delete", new DialogInterface.OnClickListener(){
+
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				ServerAPITask deleteFriend = new ServerAPITask();
+				deleteFriend.setAPIRequest("http://riptide.alexkersten.com:3333/stoneapi/account/delfriend/uid/" + toDelete.getName());
+				// TODO Auto-generated method stub
+				deleteFriend.execute("Hello");
+				getFriendsList();
+				mDrawerLayout.closeDrawers();
+			}
+
+		})
+		.show();
 	}
 
 	@Override
@@ -100,10 +206,6 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 	public boolean onPrepareOptionsMenu(Menu menu) {
 		return super.onPrepareOptionsMenu(menu);
 	}
-
-
-
-
 
 
 	@Override
@@ -243,16 +345,16 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 		.setTitle(m.message)
 		.setView(addView)
 		.setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
-			
+
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
 				dialog.cancel();
 				// TODO Auto-generated method stub
-				
+
 			}
 		})
 		.setPositiveButton("Vote Down", new DialogInterface.OnClickListener() {
-			
+
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
 				rating.setText("Rating: " + (mmrating));
@@ -261,7 +363,7 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 				request.execute("Hello");
 				dialog.dismiss();
 				// TODO Auto-generated method stub
-				
+
 			}
 		})
 		.setNegativeButton("Vote Up", new DialogInterface.OnClickListener(){
@@ -274,9 +376,9 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 				request.execute("Hello");
 				dialog.dismiss();
 				// TODO Auto-generated method stub
-				
+
 			}
-			
+
 		})
 		.show();
 	}
