@@ -8,7 +8,9 @@
     <AutoCompleteTextView
         android:id="@+id/friend_search"
         android:layout_width="match_parent"
+        android:layout_weight="1"
         android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
         android:ems="10"
         android:hint="Send private message to friend..." >
 
@@ -20,22 +22,26 @@
         android:layout_marginTop="16dp"
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
+        android:layout_weight="1"
         android:hint="Add text here..." />
     <LinearLayout
-        android:layout_marginTop="16dp"
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
+        android:layout_weight="1"
+        style="?android:attr/buttonBarStyle"
         android:orientation="horizontal" >
         <Button
             android:id="@+id/send_message"
             android:layout_height="wrap_content"
             android:layout_width="match_parent"
             android:layout_weight=".5"
+            style="?android:attr/buttonBarButtonStyle"
             android:text="Send" />
         <Button
             android:id="@+id/cancel_message"
             android:layout_height="wrap_content"
             android:layout_width="match_parent"
+            style="?android:attr/buttonBarButtonStyle"
             android:layout_weight=".5"
             android:text="Cancel" />
     </LinearLayout>

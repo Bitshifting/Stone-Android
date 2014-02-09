@@ -21,11 +21,13 @@
         android:layout_marginTop="16dp"
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
+        style="?android:attr/buttonBarStyle"
         android:orientation="horizontal" >
 
         <Button
             android:id="@+id/login_create_button"
             android:layout_width="match_parent"
+            style="?android:attr/buttonBarButtonStyle"
             android:layout_height="wrap_content"
             android:text="Login" />
         

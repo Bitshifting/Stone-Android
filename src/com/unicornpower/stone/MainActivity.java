@@ -41,6 +41,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener;
 import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -106,7 +107,7 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 		locationClient = new LocationClient(this, this, this);
 		locationClient.connect();
 
-		
+
 
 		// check to see if the user is already logged in
 		loggedInUsername = PreferencesUtil.getFromPrefs(this, PreferencesUtil.PREFS_LOGIN_USERNAME_KEY, PreferencesUtil.PREFS_LOGIN_USERNAME_KEY);
@@ -118,13 +119,13 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 			Log.e("Username", loggedInUsername);
 			Toast.makeText(this, loggedInUsername, Toast.LENGTH_LONG).show();
 		}
-		
+
 		getFriendsList();
-		
-		final UserMessage myDialog = new UserMessage(this, friendList, currentLocation);
+
+		final UserMessage myDialog = new UserMessage(this, friendList, locationClient);
 		myDialog.setContentView(R.layout.dialog_message);
 		myDialog.setTitle("Send a Message");
-		
+
 		((Button) findViewById(R.id.message_button)).setOnClickListener(new OnClickListener(){
 
 			@Override
@@ -144,12 +145,23 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 			}
 
 		});
-		
-		
+
+		((Button) findViewById(R.id.change_name_button)).setOnClickListener(new OnClickListener(){
+
+			@Override
+			public void onClick(View v) {
+				changeName();
+
+			}
+
+		});
+
+
 	}
 
 	public void getFriendsList(){
 		ServerAPITask friendRequest = new ServerAPITask();
+		mDrawerList.removeAllViewsInLayout();
 		friendList.clear();
 		//change this to get the real user ID at some point
 		friendRequest.setAPIRequest("http://riptide.alexkersten.com:3333/stoneapi/account/getfollowees/" + loggedInUserId);
@@ -253,6 +265,41 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 		.show();
 	}
 
+	private void changeName(){
+		final EditText inputT = new EditText(this);
+		inputT.setLayoutParams(new LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT));
+		inputT.setHint("New Name");
+		new AlertDialog.Builder(this)
+		.setTitle("Change Name")
+		.setView(inputT)
+		.setPositiveButton("Cancel", null)
+		.setNegativeButton("Change", new DialogInterface.OnClickListener() {
+
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				String s = inputT.getText().toString();
+				ServerAPITask changeName = new ServerAPITask();
+				changeName.setAPIRequest("http://riptide.alexkersten.com:3333/stoneapi/account/update/" + loggedInUserId + "/" + s);
+				try {
+					JSONObject response = new JSONObject(changeName.execute("Hello").get());
+					if (response.getBoolean("success")){
+						Toast.makeText(getApplicationContext(), "Name successfully changed to " + s, Toast.LENGTH_LONG).show();
+						loggedInUsername = s;
+						PreferencesUtil.saveToPrefs(getApplicationContext(), PreferencesUtil.PREFS_LOGIN_USERNAME_KEY, s);
+					}else{
+						Toast.makeText(getApplicationContext(), s + " is unavailable, try another name.", Toast.LENGTH_LONG).show();
+					}
+
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					Toast.makeText(getApplicationContext(), "Error, please try again", Toast.LENGTH_LONG).show();
+				} 
+
+			}
+		})
+		.show();
+	}
+
 	private void showLoginDialogue() {
 		final UserLoginCreate myDialog = new UserLoginCreate(this);
 		myDialog.setContentView(R.layout.user_login);
@@ -341,7 +388,7 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 
 		try {
 			String s = getMapTask.execute("Hello").get();
-
+			Location currLocation = locationClient.getLastLocation();
 			jsonResponse = new JSONArray(s);
 			for (int i = 0; i < jsonResponse.length(); i++){
 				jsonObjects.add(jsonResponse.getJSONObject(i));
@@ -351,7 +398,17 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 				messageOs.add(new MessageCrap(temp.getString("_id"), temp.getString("message"), temp.getDouble("rating"), temp.getDouble("lat"), temp.getDouble("lon"), temp.getString("username"), temp.getString("recipient"), temp.getBoolean("private")));
 			}
 			for (int i = 0; i < messageOs.size(); i++){
-				messageOs.get(i).marker = map.addMarker(new MarkerOptions().anchor(0.0f,  1.0f) .position(new LatLng(messageOs.get(i).lat, messageOs.get(i).lon)));
+				MarkerOptions m;
+				double space = distance(currLocation.getLatitude(), currLocation.getLongitude(), messageOs.get(i).lat, messageOs.get(i).lon);
+				if (space < .1){
+					m = new MarkerOptions().anchor(0.0f,  1.0f) .position(new LatLng(messageOs.get(i).lat, messageOs.get(i).lon)) .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+				}else if (space < .6){
+					m = new MarkerOptions().anchor(0.0f,  1.0f) .position(new LatLng(messageOs.get(i).lat, messageOs.get(i).lon)) .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+				}else{
+					m = new MarkerOptions().anchor(0.0f,  1.0f) .position(new LatLng(messageOs.get(i).lat, messageOs.get(i).lon)) .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+				}
+
+				messageOs.get(i).marker = map.addMarker(m);
 				//Log.e("POINT", "Added a point at latitude " + messageOs.get(i).lat + " and longitude " + messageOs.get(i).lon);
 
 			}
@@ -364,10 +421,16 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 						if (messageOs.get(i).marker.equals(marker))
 							mmessage = messageOs.get(i);	
 					}
-
-					createMarkerDialog(mmessage);
+					Location myLocation = locationClient.getLastLocation();
+					double dist = distance(myLocation.getLatitude(), myLocation.getLongitude(), marker.getPosition().latitude, marker.getPosition().longitude);
+					Log.e("Distance", "" + dist);
+					if (dist < .1){
+						createMarkerDialog(mmessage); 
+					}
 					return false;
 				}
+
+
 
 			});
 
@@ -385,6 +448,18 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 		}
 
 
+	}
+
+	private double distance(double lat1, double lon1, double lat2, double lon2){
+		double R = 6371f;
+		double dLat = ((lat2-lat1)*Math.PI/180);
+		double dLon = ((lon2 - lon1)*Math.PI/180);
+		double lata = (lat1*Math.PI/180);
+		double latb = (lat2*Math.PI/180);
+
+		double a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.sin(dLon/2) * Math.sin(dLon/2)*Math.cos(lata)*Math.cos(latb);
+		double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+		return R * c;
 	}
 
 	public void createMarkerDialog(MessageCrap m){

@@ -21,6 +21,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.google.android.gms.location.LocationClient;
+
 public class UserMessage extends Dialog implements OnClickListener, OnCancelListener{
 
 	private Button sendMessage;
@@ -29,14 +31,15 @@ public class UserMessage extends Dialog implements OnClickListener, OnCancelList
 	private AutoCompleteTextView friendsList;
 	private ArrayList<String> friends;
 	private Location location;
+	private LocationClient locC;
 	private Context context;
 
 
 
-	public UserMessage(Context context, List<Friend> fList, Location loc) {
+	public UserMessage(Context context, List<Friend> fList, LocationClient loc) {
 		super(context);
 		this.context = context;
-		location = loc;
+		locC = loc;
 		friends = new ArrayList<String>();
 		for (Friend f : fList) {
 			friends.add(f.getName());
@@ -86,20 +89,20 @@ public class UserMessage extends Dialog implements OnClickListener, OnCancelList
 	public void saveMessage() {
 		
 		String uName = PreferencesUtil.getFromPrefs(context, PreferencesUtil.PREFS_LOGIN_USERNAME_KEY, PreferencesUtil.PREFS_LOGIN_USERNAME_KEY);
-		
+		location = locC.getLastLocation();
 		ServerAPITask messageTask = new ServerAPITask();
 		try {
 			String dec = URLDecoder.decode(this.message.getText().toString(), "UTF-8");
 
-			if (this.friendsList.getText().toString().equals("public")) {
-				messageTask.setAPIRequest("/stoneapi/message/post/" + dec + "/" + location.getLatitude() + "/" + location.getLongitude() + "/" + uName + "/public");
+			if (this.friendsList.getText().toString().equals("")) {
+				
+				messageTask.setAPIRequest("http://riptide.alexkersten.com:3333/stoneapi/message/post/" + dec.replaceAll(" ", "%20") + "/" + location.getLatitude() + "/" + location.getLongitude() + "/" + uName + "/public");
 			}
 			else {
 				String f = URLDecoder.decode(this.friendsList.getText().toString(), "UTF-8");
-				messageTask.setAPIRequest("/stoneapi/message/post/" + dec + "/" + location.getLatitude() + "/" + location.getLongitude() + "/" + uName + "/" + f);
+				messageTask.setAPIRequest("http://riptide.alexkersten.com:3333/stoneapi/message/post/" + dec.replaceAll(" ", "%20") + "/" + location.getLatitude() + "/" + location.getLongitude() + "/" + uName + "/" + f);
 			}
 			String createResp = messageTask.execute("").get();
-			Log.e("Create Response", createResp);
 			JSONObject cObj = new JSONObject(createResp);
 			
 			String success = cObj.getString("success");

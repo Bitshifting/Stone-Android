@@ -39,6 +39,17 @@
             android:layout_margin="8dp"
             android:padding="10dp"
             android:text="+Friend"/>
+        
+        <Button 
+            android:id="@+id/change_name_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:layout_margin="8dp"
+            android:padding="10dp"
+            android:text="Change Name"/>
+        
     </RelativeLayout>
 
     <!--
