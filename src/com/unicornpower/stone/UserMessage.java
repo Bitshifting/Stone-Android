@@ -81,6 +81,11 @@ public class UserMessage extends Dialog implements OnClickListener, OnCancelList
 		this.message.setText("");
 		this.friendsList.setText("");
 	}
+	
+	
+	public void addLocation(Location loc) {
+		this.location = loc;
+	}
 
 
 	public void saveMessage() {
@@ -91,12 +96,12 @@ public class UserMessage extends Dialog implements OnClickListener, OnCancelList
 		try {
 			String dec = URLDecoder.decode(this.message.getText().toString(), "UTF-8");
 
-			if (this.friendsList.getText().toString().equals("public")) {
-				messageTask.setAPIRequest("/stoneapi/message/post/" + dec + "/" + location.getLatitude() + "/" + location.getLongitude() + "/" + uName + "/public");
+			if (this.friendsList.getText().toString().equals("")) {
+				messageTask.setAPIRequest("http://riptide.alexkersten.com:3333/stoneapi/message/post/" + dec + "/" + location.getLatitude() + "/" + location.getLongitude() + "/" + uName + "/public");
 			}
 			else {
 				String f = URLDecoder.decode(this.friendsList.getText().toString(), "UTF-8");
-				messageTask.setAPIRequest("/stoneapi/message/post/" + dec + "/" + location.getLatitude() + "/" + location.getLongitude() + "/" + uName + "/" + f);
+				messageTask.setAPIRequest("http://riptide.alexkersten.com:3333/stoneapi/message/post/" + dec + "/" + location.getLatitude() + "/" + location.getLongitude() + "/" + uName + "/" + f);
 			}
 			String createResp = messageTask.execute("").get();
 			Log.e("Create Response", createResp);
@@ -111,7 +116,7 @@ public class UserMessage extends Dialog implements OnClickListener, OnCancelList
 			}
 			
 		} catch(Exception e) {
-			Toast.makeText(this.getContext(), "from saveMessage", Toast.LENGTH_LONG);
+			Toast.makeText(this.getContext(), "from saveMessage", Toast.LENGTH_LONG).show();
 			e.printStackTrace();
 		}
 	}

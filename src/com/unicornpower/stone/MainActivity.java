@@ -131,6 +131,7 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
 				myDialog.show();
+				myDialog.addLocation(currentLocation);
 			}
 
 		});
@@ -316,6 +317,7 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 
 	@Override
 	public void onLocationChanged(Location location) {
+		currentLocation = location;
 		LatLng loc = new LatLng(location.getLatitude(), location.getLongitude());
 		//		Toast.makeText(this, "Location has changed", Toast.LENGTH_SHORT).show();
 		// if the app just started up then pan to the current location, otherwise let user pan elsewhere
