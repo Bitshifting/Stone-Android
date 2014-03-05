@@ -1,12 +1,11 @@
 package com.unicornpower.stone;
 
 import java.util.ArrayList;
-import java.util.concurrent.ExecutionException;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -18,9 +17,9 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
-import android.widget.Toast;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.model.MarkerOptions;
 
@@ -107,6 +106,8 @@ public class UserLoginCreate extends Dialog implements OnClickListener, OnCancel
 					PreferencesUtil.saveToPrefs(userContext, PreferencesUtil.PREFS_LOGIN_USER_ID_KEY, _user_id);
 					
 					PreferencesUtil.saveToPrefs(userContext, PreferencesUtil.PREFS_LOGIN_USERNAME_KEY, uName);
+					((Activity) userContext).getActionBar().setTitle("Stone - " + uName);
+					
 				}
 			}
 			

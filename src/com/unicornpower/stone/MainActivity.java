@@ -84,7 +84,11 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 			/** Called when a drawer has settled in a completely closed state. */
 			public void onDrawerClosed(View view) {
 				super.onDrawerClosed(view);
-				getActionBar().setTitle(mTitle);
+				if (loggedInUsername != null){
+					getActionBar().setTitle(mTitle + " - " + loggedInUsername);
+				}else{
+					getActionBar().setTitle(mTitle);
+				}
 				invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
 			}
 
@@ -117,7 +121,11 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 		}
 		else {
 			Log.e("Username", loggedInUsername);
-			Toast.makeText(this, loggedInUsername, Toast.LENGTH_LONG).show();
+			//Toast.makeText(this, loggedInUsername, Toast.LENGTH_LONG).show();
+		}
+		
+		if (loggedInUsername != null){
+			getActionBar().setTitle(mTitle + " - " + loggedInUsername);
 		}
 
 		getFriendsList();
@@ -358,6 +366,19 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 	}
 
 	@Override
+	public void onPause(){
+		super.onPause();
+		locationClient.disconnect();
+	}
+
+	@Override
+	public void onResume(){
+		super.onResume();
+		locationClient.connect();
+	}
+
+
+	@Override
 	public void onDisconnected() {
 	}
 
@@ -368,7 +389,7 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 		//		Toast.makeText(this, "Location has changed", Toast.LENGTH_SHORT).show();
 		// if the app just started up then pan to the current location, otherwise let user pan elsewhere
 		if (!isInit) {
-			map.moveCamera(CameraUpdateFactory.newLatLngZoom(loc, 10));
+			map.moveCamera(CameraUpdateFactory.newLatLngZoom(loc, 14));
 			isInit = true;
 
 		}	
@@ -384,7 +405,7 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 		messageOs.clear();
 		map.clear();
 		//getMapTask.setAPIRequest("http://riptide.alexkersten.com:3333/stoneapi/message/post/hello/40.42853/-86.9222/SmartAssSam/public");
-		getMapTask.setAPIRequest("http://riptide.alexkersten.com:3333/stoneapi/message/get/" + currentLocation.getLatitude() + "/" + currentLocation.getLongitude() + "86/5280");
+		getMapTask.setAPIRequest("http://riptide.alexkersten.com:3333/stoneapi/message/get/" + currentLocation.getLatitude() + "/" + currentLocation.getLongitude() + "/5280");
 
 		try {
 			String s = getMapTask.execute("Hello").get();
@@ -401,11 +422,11 @@ public class MainActivity extends Activity implements LocationListener, Connecti
 				MarkerOptions m;
 				double space = distance(currLocation.getLatitude(), currLocation.getLongitude(), messageOs.get(i).lat, messageOs.get(i).lon);
 				if (space < .1){
-					m = new MarkerOptions().anchor(0.0f,  1.0f) .position(new LatLng(messageOs.get(i).lat, messageOs.get(i).lon)) .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+					m = new MarkerOptions().anchor(.5f,  1.0f) .position(new LatLng(messageOs.get(i).lat, messageOs.get(i).lon)) .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
 				}else if (space < .6){
-					m = new MarkerOptions().anchor(0.0f,  1.0f) .position(new LatLng(messageOs.get(i).lat, messageOs.get(i).lon)) .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+					m = new MarkerOptions().anchor(.5f,  1.0f) .position(new LatLng(messageOs.get(i).lat, messageOs.get(i).lon)) .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
 				}else{
-					m = new MarkerOptions().anchor(0.0f,  1.0f) .position(new LatLng(messageOs.get(i).lat, messageOs.get(i).lon)) .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+					m = new MarkerOptions().anchor(.5f,  1.0f) .position(new LatLng(messageOs.get(i).lat, messageOs.get(i).lon)) .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
 				}
 
 				messageOs.get(i).marker = map.addMarker(m);
